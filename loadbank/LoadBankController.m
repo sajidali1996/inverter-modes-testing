@@ -59,8 +59,8 @@ classdef LoadBankController
                         valueArray(combination(i))=1;
                     end
                     write(obj.LoadBank,"coils",1,valueArray,slave_id)
-                    disp("Turned ON the following Loads on Phase 1")
-                    disp(valueArray)
+                    %disp("Turned ON the following Loads on Phase 1")
+                    %disp(valueArray)
 
 
                 case 2
@@ -69,8 +69,8 @@ classdef LoadBankController
                         valueArray(combination(i))=1;
                     end
                     write(obj.LoadBank,"coils",25,valueArray,slave_id)
-                    disp("Turned ON the following Loads on Phase 2")
-                    disp(valueArray)
+                    %disp("Turned ON the following Loads on Phase 2")
+                    %disp(valueArray)
 
                 case 3
                     [slave_id,combination]=findCombination_CR(RealPower);
@@ -78,8 +78,8 @@ classdef LoadBankController
                         valueArray(combination(i))=1;
                     end
                     write(obj.LoadBank,"coils",17,valueArray,slave_id)
-                    disp("Turned ON the following Loads on Phase 3")
-                    disp(valueArray)
+                    %disp("Turned ON the following Loads on Phase 3")
+                    %disp(valueArray)
             end
 
         end
@@ -103,6 +103,10 @@ classdef LoadBankController
             %Syntax
             %   write(obj,"coils",address,value,slaveID)
             write(obj.LoadBank,"coils",15,1,3);
+        end
+        function turnOffLoad(obj)
+            %This fuction turns off the load
+            write(obj.LoadBank,"coils",15,0,3);
         end
         function turnOnPower(obj)
             % This function turns on the load by setting the coil 14 of
