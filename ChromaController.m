@@ -39,15 +39,33 @@ classdef ChromaController
             if isempty(obj.Instrument) || ~strcmp(obj.Instrument.Status, 'open')
                 error('Instrument not connected. Call connect() first.');
             end
+            if(Pmp==0)      % cannot set zeros therefore set to 50W
+                Pmp=50;
+            elseif(Pmp>3300)
+                Pmp=3300;   % sanity check saturate at channel limit
+            end
 
             [Voc, Isc, Vmp, Imp]=calculateParameters(obj,Pmp);
+
+            try
             
-            fprintf(obj.Instrument, ['SAS:VOC  ', char(string(Voc))]);
-            fprintf(obj.Instrument, ['SAS:ISC  ', char(string(Isc))]);
-            fprintf(obj.Instrument, ['SAS:VMPp  ', char(string(Vmp))]);
-            fprintf(obj.Instrument, ['SAS:IMPp  ', char(string(Imp))]);
-            fprintf(obj.Instrument, 'TRIG');
-            fprintf('Power parameters set.\n');
+                fprintf(obj.Instrument, ['SAS:VOC  ', char(string(Voc))]);
+                fprintf(obj.Instrument, ['SAS:ISC  ', char(string(Isc))]);
+                fprintf(obj.Instrument, ['SAS:VMPp  ', char(string(Vmp))]);
+                fprintf(obj.Instrument, ['SAS:IMPp  ', char(string(Imp))]);
+                fprintf(obj.Instrument, 'TRIG');
+               % fprintf('Power parameters set.\n');
+            catch
+                obj.connect();
+                pause(1)
+                fprintf(obj.Instrument, ['SAS:VOC  ', char(string(Voc))]);
+                fprintf(obj.Instrument, ['SAS:ISC  ', char(string(Isc))]);
+                fprintf(obj.Instrument, ['SAS:VMPp  ', char(string(Vmp))]);
+                fprintf(obj.Instrument, ['SAS:IMPp  ', char(string(Imp))]);
+                fprintf(obj.Instrument, 'TRIG');
+                %fprintf('Power parameters set.\n');
+
+            end
         end
         
         function turnOn(obj)
@@ -100,7 +118,7 @@ classdef ChromaController
             Voc = min(Voc, maxVoc);
             Isc = min(Isc, maxIsc);
             
-            fprintf('Calculated Parameters - Voc: %.2f V, Isc: %.2f A, Vmp: %.2f V, Imp: %.2f A\n', Voc, Isc, Vmp, Imp);
+            %fprintf('Calculated Parameters - Voc: %.2f V, Isc: %.2f A, Vmp: %.2f V, Imp: %.2f A\n', Voc, Isc, Vmp, Imp);
         end
     end
 end
