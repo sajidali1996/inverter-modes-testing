@@ -22,6 +22,7 @@ function [slave_ID, combination] = findCombination_AL(inputValue)
     slave_ID=1; % This value comes from programming manual of the equipment
     R = [100, 200, 200, 500, 1000, 1000, 2000, 2000];
     address = [8, 9, 10, 11, 12, 13, 14, 15];
+    address = address+1;
     
     % Get all combinations of indices
     n = numel(R);

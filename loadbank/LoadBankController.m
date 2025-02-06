@@ -3,18 +3,18 @@ classdef LoadBankController
         PortNumber % Port number for communication
         LoadBank   % Modbus object for communication
     end
-    
+
     methods
         % Constructor
         function obj = LoadBankController(portNumber)
             % LoadBankController Constructor
             % Syntax:
             %   obj = LoadBankController(portNumber)
-            % 
+            %
             % Description:
-            %   Initializes the LoadBankController object and establishes 
+            %   Initializes the LoadBankController object and establishes
             %   communication using the specified port number.
-            % 
+            %
             % Input:
             %   portNumber - String specifying the COM port (e.g., 'COM4').
             %
@@ -27,30 +27,107 @@ classdef LoadBankController
             obj.LoadBank.Timeout = 3; % Set timeout
             fprintf('Communication established successfully.\n');
         end
-%         function testFunction(~)
-%             [a,b] = findCombination_AR(5500);
-%             disp(a)
-%             disp(b)
-%         end
+        %         function testFunction(~)
+        %             [a,b] = findCombination_AR(5500);
+        %             disp(a)
+        %             disp(b)
+        %         end
 
-        %perform sanity check 
+        %perform sanity check
 
 
         %perform status check
 
-%         function status = checkStatus(~)
-%             status = true;
-%         end
+        %         function status = checkStatus(~)
+        %             status = true;
+        %         end
+        function setReactivePower(obj,Phase,ReactivePower)
+            %setReactivePower Function
+            %syntax
+            %setReactivePower(phase,ReactivePowerinVA)
+            %ReactivePowerinVA = positive for capacitive reactive power
+            %ReactivePowerinVa  = Negative for inductive reactive power
+
+            ReactivePower = round((120^2/101^2)*ReactivePower);%since the load is rated at 120V therefore scaling is required
+            %to adjust the load for 101V
+            valueArray=zeros(1,8);
+            if ~isnumeric(Phase) && (Phase==1 || Phase == 2 || Phase ==3)
+                errordlg('Phase parameter must be 1, 2 or 3', 'Error');
+            end
+
+            if(ReactivePower>0)
+                %capacitive power
+                switch Phase
+                    case 1
+                        [slave_id,combination]=findCombination_AC(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",1,valueArray,slave_id)
+
+                    case 2
+                        [slave_id,combination]=findCombination_BC(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",25,valueArray,slave_id)
+
+
+                    case 3
+                        [slave_id,combination]=findCombination_CC(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",17,valueArray,slave_id)
+
+                end
+
+
+
+            else
+                %inductive power
+                switch Phase
+                    case 1
+                        [slave_id,combination]=findCombination_AL(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",1,valueArray,slave_id)
+
+                    case 2
+                        [slave_id,combination]=findCombination_BL(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",25,valueArray,slave_id)
+
+
+                    case 3
+                        [slave_id,combination]=findCombination_CL(ReactivePower);
+                        for i=1:length(combination)
+                            valueArray(combination(i))=1;
+                        end
+                        write(obj.LoadBank,"coils",17,valueArray,slave_id)
+
+                end
+
+
+            end
+
+
+        end
         function setRealPower(obj,Phase,RealPower)
+            %since the load is rated at 120V therefore scaling is required
+            %to adjust the load for 101V
             RealPower=round((120^2/101^2)*RealPower);
             %This function Sets the RealPower on selected Phase
             %Syntax
             %   setRealPower(2,5500)
             valueArray=zeros(1,8);
             if ~isnumeric(Phase) && (Phase==1 || Phase == 2 || Phase ==3)
-               errordlg('Phase parameter must be 1, 2 or 3', 'Error');
+                errordlg('Phase parameter must be 1, 2 or 3', 'Error');
             end
-            
+
 
             switch Phase
                 case 1
@@ -93,7 +170,7 @@ classdef LoadBankController
 
 
 
-       
+
 
         end
         %turn on Load
@@ -118,7 +195,7 @@ classdef LoadBankController
         function selectVoltageLevel(obj,select)
             %This function will switch voltage level between 120V and 240V
             %Syntax
-            %   obj.selectVoltageLevel(X)  
+            %   obj.selectVoltageLevel(X)
             %   X:
             %   1 = select 120V
             %   2 = select 240V
@@ -136,7 +213,7 @@ classdef LoadBankController
             end
 
         end
-        
+
         % Method: findCombination_AL
         function [ID, combination] = findCombination_AL(~, varargin)
             [ID, combination] = findCombination_AL(varargin{:}); % Call the external function
